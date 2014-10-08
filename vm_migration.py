@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os
+import time
 import commands
 
 before='source ./OPENRC && '
@@ -28,14 +28,40 @@ class StartMachine():
                 self.base_file_map={}
 
         def start_base_machine(self):
-                map_add_instance=create_base_img()
+                map_add_instance=self.create_base_img()
                 count=0
                 for vm in map_add_instance:
-                        start_base_vm=before+'nova boot --flavor m1.tiny --image '+map_add_instance[vm][2]' --nic net-id=5c9d3ae0-192f-4773-bcb1-88b3e94a4235 --security-group default --key-name demo-key '+'CloudStack_migration'+count
+                        start_base_vm=before+'nova boot --flavor m1.tiny --image '+map_add_instance[vm][2]+' --nic net-id=5c9d3ae0-192f-4773-bcb1-88b3e94a4235 --security-group default --key-name demo-key '+'CloudStack_migration'+str(count)
+                        print start_base_vm
+                        start_base_vm_status, start_base_vm_output=commands.getstatusoutput(start_base_vm)
+                        print start_base_vm_status
+                        print map_add_instance
+                        find_vm_openstack=before+'nova show CloudStack_migration'+str(count)+'|grep OS-EXT-SRV-ATTR:instance_name|awk \'{print $4}\''
+                        find_vm_openstack_status, find_vm_openstack_output=commands.getstatusoutput(find_vm_openstack)
+                        map_add_instance[vm].append('CloudStack_migration'+str(count))
+                        map_add_instance[vm].append(find_vm_openstack_output)
+                        print map_add_instance
+                        time.sleep(60)
+                        temp_container=self.get_src_back_file(map_add_instance[vm][4])
+                        map_add_instance[vm].append(temp_container)
+                        print map_add_instance
                         
 
         def get_network_id(self):
                 pass
+
+        def get_sec_grp(self):
+                pass
+
+        def get_src_back_file(self, instance):
+                res=[]
+                find_source='virsh dumpxml '+instance+'|awk -F"\'" \'/source file/ {print $2}\'|awk \'NR==1\''
+                s_status, s_file=commands.getstatusoutput(find_source)
+                find_back='qemu-img info '+s_file+'|awk \'/backing file/ {print $3}\''
+                b_status, b_file=commands.getstatusoutput(find_back)
+                res.append(s_file)
+                res.append(b_file)
+                return res
 
         def create_base_img(self):
                 map_add_img=self.source_map
@@ -53,7 +79,6 @@ class StartMachine():
                                         print "ERROR!!!"+img_status
                         else:
                                 map_add_img[vm].append(self.base_file_map[index])
-                print self.base_file_map
                 return map_add_img
                         
 
@@ -61,5 +86,4 @@ if __name__=='__main__':
         example=GetSourceMap(output)
         temp=example.get_source_map()
         test=StartMachine(temp)
-        s=test.create_base_img()
-        print s
+        test.start_base_machine()
