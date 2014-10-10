@@ -80,6 +80,12 @@ class StartMachine():
                         else:
                                 map_add_img[vm].append(self.base_file_map[index])
                 return map_add_img
+				
+		def change_backing_file(self, src_file, openstack_bac_file):
+				pass
+				
+		def change_openstack_disk(self, openstack_disk, src_file):
+				pass
                         
 
 if __name__=='__main__':
