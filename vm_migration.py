@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+import os
+import os.path
 import time
 import commands
+import shutil
 
 before='source ./OPENRC && '
 command='virsh list | awk \'NR>2 {print $2}\''
@@ -82,10 +85,25 @@ class StartMachine():
                 return map_add_img
 				
 		def change_backing_file(self, src_file, openstack_bac_file):
-				pass
+				rebase_str='qemu-img rebase -u '+src_file+' -b '+openstack_bac_file
+				rebase_status, rebase_output=commands.getstatusoutput(rebase_str)
+				if rebase_status != 0:
+						print "ERROR!!!"
 				
 		def change_openstack_disk(self, openstack_disk, src_file):
-				pass
+				cp_dest=openstack_disk[:-4]
+				cp_name='disk'
+				after_cp_src=cp_dest+src_file.split('/')[-1]
+				if os.path.exists(openstack_disk):
+						os.remove(openstack_disk)
+						shutil.copy(src_file, cp_dest)
+						if os.path.exists(after_cp_src):
+								os.rename(after_cp_src, openstack_disk)
+						else:
+								print "ERROR!!!"
+						
+				else:
+						print "ERROR!!!"
                         
 
 if __name__=='__main__':
