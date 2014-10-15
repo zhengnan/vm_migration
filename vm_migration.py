@@ -84,26 +84,26 @@ class StartMachine():
                                 map_add_img[vm].append(self.base_file_map[index])
                 return map_add_img
 				
-		def change_backing_file(self, src_file, openstack_bac_file):
-				rebase_str='qemu-img rebase -u '+src_file+' -b '+openstack_bac_file
-				rebase_status, rebase_output=commands.getstatusoutput(rebase_str)
-				if rebase_status != 0:
-						print "ERROR!!!"
+	def change_backing_file(self, src_file, openstack_bac_file):
+		rebase_str='qemu-img rebase -u '+src_file+' -b '+openstack_bac_file
+		rebase_status, rebase_output=commands.getstatusoutput(rebase_str)
+		if rebase_status != 0:
+			print "ERROR!!!"
 				
-		def change_openstack_disk(self, openstack_disk, src_file):
-				cp_dest=openstack_disk[:-4]
-				cp_name='disk'
-				after_cp_src=cp_dest+src_file.split('/')[-1]
-				if os.path.exists(openstack_disk):
-						os.remove(openstack_disk)
-						shutil.copy(src_file, cp_dest)
-						if os.path.exists(after_cp_src):
-								os.rename(after_cp_src, openstack_disk)
-						else:
-								print "ERROR!!!"
+	def change_openstack_disk(self, openstack_disk, src_file):
+		cp_dest=openstack_disk[:-4]
+		cp_name='disk'
+		after_cp_src=cp_dest+src_file.split('/')[-1]
+		if os.path.exists(openstack_disk):
+			os.remove(openstack_disk)
+			shutil.copy(src_file, cp_dest)
+			if os.path.exists(after_cp_src):
+				os.rename(after_cp_src, openstack_disk)
+			else:
+				print "ERROR!!!"
 						
-				else:
-						print "ERROR!!!"
+		else:
+			print "ERROR!!!"
                         
 
 if __name__=='__main__':
